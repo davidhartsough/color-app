@@ -1,26 +1,29 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import Loader from "./Loader";
+import ColorCreator from "./ColorCreator";
+import ColorList from "./ColorList";
+import { changeSaturation } from "./utils";
+import "./App.css";
 
-function App() {
+export default function App() {
+  const [colorData, setColorData] = useState([]);
+  useEffect(() => {
+    fetch("./colors.json")
+      .then(response => response.json())
+      .then(({ colors }) => setColorData(colors))
+      .catch(console.warn);
+  }, []);
+  const createColor = newColor => setColorData([...colorData, newColor]);
+  const handleColorClick = index => {
+    const colors = [...colorData];
+    colors[index].hsl = changeSaturation(colors[index].hsl);
+    setColorData(colors);
+  };
+  if (!colorData.length) return <Loader />;
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <section>
+      <ColorCreator createColor={createColor} />
+      <ColorList colorData={colorData} handleColorClick={handleColorClick} />
+    </section>
   );
 }
-
-export default App;
